@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPIE — Protected Inbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --google-blue: #1a73e8;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border: #e0e0e0;
+            --bg: #f6f8fc;
+            --white: #ffffff;
+            --sidebar-bg: #f6f8fc;
+            --hover: #f1f3f4;
+            --red: #d93025;
+            --green: #137333;
+            --yellow: #b06000;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px 0 12px;
+            background: var(--bg);
+            gap: 12px;
+            flex-shrink: 0;
+            border-bottom: 1px solid transparent;
+        }
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 220px;
+            text-decoration: none;
+        }
+
+        .topbar-logo svg { width: 28px; height: 28px; }
+
+        .topbar-logo span {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .topbar-logo span em { color: var(--google-blue); font-style: normal; }
+
+        .search-bar {
+            flex: 1;
+            max-width: 720px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            background: #eaf1fb;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .search-bar input:focus {
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .search-bar .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--google-blue);
+            color: white;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .icon-btn:hover { background: var(--hover); }
+
+        /* LAYOUT */
+        .layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 256px;
+            padding: 8px 0;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .compose-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 12px 8px;
+            padding: 16px 20px;
+            background: var(--white);
+            border: none;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            transition: box-shadow 0.2s;
+            width: calc(100% - 24px);
+        }
+
+        .compose-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 6px 24px 6px 16px;
+            border-radius: 0 16px 16px 0;
+            margin-right: 16px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.15s;
+            text-decoration: none;
+        }
+
+        .nav-item:hover { background: var(--hover); }
+        .nav-item.active { background: #d3e3fd; font-weight: 600; }
+
+        .nav-item svg { color: var(--text-secondary); flex-shrink: 0; }
+        .nav-item.active svg { color: var(--google-blue); }
+
+        .nav-count {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-section {
+            padding: 16px 16px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* MAIN INBOX */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            border-radius: 16px 0 0 0;
+            overflow: hidden;
+            margin-top: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .inbox-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .toolbar-btn {
+            padding: 6px 10px;
+            border: none;
+            background: none;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+
+        .toolbar-btn:hover { background: var(--hover); }
+
+        .inbox-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: color 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab.active {
+            color: var(--google-blue);
+            border-bottom-color: var(--google-blue);
+        }
+
+        .tab:hover:not(.active) { background: var(--hover); }
+
+        /* STATUS BAR */
+        .status-bar {
+            padding: 6px 16px;
+            background: #e8f0fe;
+            border-bottom: 1px solid #c5d5f5;
+            font-size: 12px;
+            color: #1a73e8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* EMAIL LIST */
+        .email-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .email-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.1s, box-shadow 0.1s;
+            text-decoration: none;
+            color: inherit;
+            min-height: 52px;
+        }
+
+        .email-row:hover {
+            background: #f5f5f5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            z-index: 1;
+            position: relative;
+        }
+
+        .email-row.unread { background: var(--white); }
+        .email-row.unread .sender-name { font-weight: 700; }
+        .email-row.unread .subject-text { font-weight: 600; }
+
+        .email-check {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .email-star {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #ccc;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .email-star:hover { color: #f4b400; }
+
+        .sender-col {
+            width: 200px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .sender-name {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-body-col {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            gap: 6px;
+        }
+
+        .subject-text {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+            max-width: 280px;
+        }
+
+        .snippet-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        /* RISK BADGES */
+        .risk-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .badge-legit {
+            background: #e6f4ea;
+            color: #137333;
+            border: 1px solid #ceead6;
+        }
+
+        .badge-medium {
+            background: #fef7e0;
+            color: #b06000;
+            border: 1px solid #fce8c0;
+        }
+
+        .badge-high {
+            background: #fce8e6;
+            color: #c5221f;
+            border: 1px solid #f5c6c5;
+        }
+
+        .badge-analyzing {
+            background: #e8f0fe;
+            color: #1a73e8;
+            border: 1px solid #c5d5f5;
+        }
+
+        .email-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .email-row.unread .email-date { font-weight: 600; color: var(--text-primary); }
+
+        /* EMPTY STATE */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+            gap: 12px;
+        }
+
+        .empty-state svg { opacity: 0.3; }
+        .empty-state p { font-size: 15px; }
+
+        /* SCROLLBAR */
+        .email-list::-webkit-scrollbar { width: 8px; }
+        .email-list::-webkit-scrollbar-track { background: transparent; }
+        .email-list::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a class="topbar-logo" href="/">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 3L5 7.5V15C5 21.08 9.84 26.76 16 28C22.16 26.76 27 21.08 27 15V7.5L16 3Z" fill="#1a73e8" opacity="0.15"/>
+            <path d="M16 3L5 7.5V15C5 21.08 9.84 26.76 16 28C22.16 26.76 27 21.08 27 15V7.5L16 3Z" stroke="#1a73e8" stroke-width="1.5" fill="none"/>
+            <path d="M11 16l3.5 3.5L21 13" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>C<em>PIE</em></span>
+    </a>
+
+    <div class="search-bar">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" placeholder="Search mail">
+    </div>
+
+    <div class="topbar-right">
+        <a href="/logout" class="icon-btn" title="Sign out" style="font-size:13px; color: var(--text-secondary); text-decoration:none; padding: 0 12px; width:auto; border-radius:4px;">
+            Sign out
+        </a>
+        <div class="user-avatar" title="{{ user_email }}">
+            {{ user_email[0].upper() if user_email else 'U' }}
+        </div>
+    </div>
+</div>
+
+<div class="layout">
+
+    <div class="sidebar">
+        <div style="padding: 0 8px 8px;">
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 16px; font-size:13px; color:var(--text-secondary); font-weight:500;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="#1a73e8" opacity="0.2"/><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="none" stroke="#1a73e8" stroke-width="1.5"/></svg>
+                CPIE Active
+            </div>
+        </div>
+
+        <a href="/dashboard" class="nav-item active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            Inbox
+            <span class="nav-count">{{ emails|length if emails else 0 }}</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.5"><path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14z"/></svg>
+            Sent
+        </a>
+
+        <div class="sidebar-section">CPIE Reports</div>
+
+        <a href="#" class="nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#d93025"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+            High Risk
+        </a>
+
+        <a href="#" class="nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#b06000"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+            Suspicious
+        </a>
+
+        <a href="#" class="nav-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#137333"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            Verified Safe
+        </a>
+    </div>
+
+    <div class="main">
+        <div class="inbox-toolbar">
+            <button class="toolbar-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                Refresh
+            </button>
+            <button class="toolbar-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
+                Filter
+            </button>
+        </div>
+
+        <div class="inbox-tabs">
+            <div class="tab active">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                Primary
+            </div>
+            <div class="tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 2H3C2 2 1 2.9 1 4v18l4-4h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                Social
+            </div>
+            <div class="tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>
+                Promotions
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z"/></svg>
+            CPIE Tier 1 active — all emails scanned on arrival
+        </div>
+
+        <div class="email-list">
+            {% if emails %}
+                {% for email in emails %}
+                <a href="/email/{{ email.id }}" class="email-row {% if loop.index <= 3 %}unread{% endif %}">
+                    <input type="checkbox" class="email-check" onclick="event.stopPropagation()">
+                    <svg class="email-star" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" onclick="event.preventDefault(); event.stopPropagation();">
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                    </svg>
+
+                    <div class="sender-col">
+                        <div class="sender-name">{{ email.sender | truncate(28, True, '') }}</div>
+                    </div>
+
+                    <div class="email-body-col">
+                        <span class="subject-text">{{ email.subject }}</span>
+                        <span class="snippet-text">&nbsp;— {{ email.snippet[:80] if email.snippet else '' }}</span>
+                    </div>
+
+                    <div class="email-right">
+                        {% if email.sts_score == 'LEGIT' %}
+                            <span class="risk-badge badge-legit">✓ Legit</span>
+                        {% elif email.sts_score == 'TBD' %}
+                            <span class="risk-badge badge-analyzing">Analyzing</span>
+                        {% elif email.mii_score is not none and email.mii_score >= 70 %}
+                            <span class="risk-badge badge-high">MII: {{ email.mii_score }}</span>
+                        {% elif email.mii_score is not none and email.mii_score >= 40 %}
+                            <span class="risk-badge badge-medium">MII: {{ email.mii_score }}</span>
+                        {% else %}
+                            <span class="risk-badge badge-analyzing">STS: {{ email.sts_score }}</span>
+                        {% endif %}
+                        <span class="email-date">{{ email.date[:6] if email.date else '' }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <p>No emails found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

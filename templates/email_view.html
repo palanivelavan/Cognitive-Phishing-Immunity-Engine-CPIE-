@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPIE — Email Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        :root {
+            --google-blue: #1a73e8;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border: #e0e0e0;
+            --bg: #f6f8fc;
+            --white: #ffffff;
+            --hover: #f1f3f4;
+            --red: #d93025;
+            --red-bg: #fce8e6;
+            --green: #137333;
+            --green-bg: #e6f4ea;
+            --yellow: #b06000;
+            --yellow-bg: #fef7e0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            background: var(--bg);
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 220px;
+            text-decoration: none;
+        }
+
+        .topbar-logo svg { width: 28px; height: 28px; }
+
+        .topbar-logo span {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .topbar-logo span em { color: var(--google-blue); font-style: normal; }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--white);
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .back-btn:hover { background: var(--hover); }
+
+        .page {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 16px 24px 40px;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 20px;
+        }
+
+        .email-card {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .email-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .email-subject {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .email-meta {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .sender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--google-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .meta-details { flex: 1; }
+
+        .meta-sender {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .meta-email {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .meta-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .email-body {
+            padding: 24px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            min-height: 300px;
+            overflow-x: auto;
+        }
+
+        .email-actions {
+            padding: 12px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+            background: var(--white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .action-btn:hover { background: var(--hover); }
+
+        .action-btn.danger {
+            color: var(--red);
+            border-color: #f5c6c5;
+        }
+
+        .action-btn.danger:hover { background: var(--red-bg); }
+
+        .analysis-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-card {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-header h3 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .panel-body { padding: 16px 18px; }
+
+        .risk-overview {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .big-badge {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .big-badge.high   { background: var(--red-bg);    color: var(--red);    }
+        .big-badge.medium { background: var(--yellow-bg); color: var(--yellow); }
+        .big-badge.low    { background: var(--green-bg);  color: var(--green);  }
+
+        .score-label { font-size: 12px; color: var(--text-secondary); }
+
+        .score-row { margin-bottom: 14px; }
+
+        .score-row-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .score-row-label strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .finding-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f8f8;
+            font-size: 13px;
+        }
+
+        .finding-item:last-child { border-bottom: none; }
+
+        .finding-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .finding-text { flex: 1; line-height: 1.4; }
+        .finding-text strong { display: block; font-weight: 600; color: var(--text-primary); }
+        .finding-text span   { color: var(--text-secondary); font-size: 12px; }
+
+        .url-item {
+            padding: 8px 10px;
+            border-radius: 4px;
+            background: #fce8e6;
+            border: 1px solid #f5c6c5;
+            font-size: 12px;
+            margin-bottom: 6px;
+            word-break: break-all;
+        }
+
+        .url-item a { color: var(--red); text-decoration: none; }
+        .url-item .url-reason { color: var(--text-secondary); margin-top: 2px; font-size: 11px; }
+
+        .sandbox-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.15s;
+            text-decoration: none;
+        }
+
+        .sandbox-btn:hover { background: #f8f9fa; }
+
+        .auth-check {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #f8f8f8;
+        }
+
+        .auth-check:last-child { border-bottom: none; }
+        .auth-pass { color: var(--green); font-weight: 600; }
+        .auth-fail { color: var(--red);   font-weight: 600; }
+
+        .no-findings {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 12px 0;
+        }
+
+        @media (max-width: 1024px) {
+            .page { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a class="topbar-logo" href="/">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 3L5 7.5V15C5 21.08 9.84 26.76 16 28C22.16 26.76 27 21.08 27 15V7.5L16 3Z" fill="#1a73e8" opacity="0.15"/>
+            <path d="M16 3L5 7.5V15C5 21.08 9.84 26.76 16 28C22.16 26.76 27 21.08 27 15V7.5L16 3Z" stroke="#1a73e8" stroke-width="1.5" fill="none"/>
+            <path d="M11 16l3.5 3.5L21 13" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>C<em>PIE</em></span>
+    </a>
+    <a href="/dashboard" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back to Inbox
+    </a>
+</div>
+
+<div class="page">
+
+    <div>
+        <div class="email-card">
+            <div class="email-header">
+                <div class="email-subject">{{ email.subject }}</div>
+                <div class="email-meta">
+                    <div class="sender-avatar">
+                        {{ email.sender[0].upper() if email.sender else 'U' }}
+                    </div>
+                    <div class="meta-details">
+                        <div class="meta-sender">{{ email.sender | truncate(50, True, '...') }}</div>
+                        <div class="meta-email">To: me</div>
+                        <div class="meta-date">{{ email.date }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="email-body" id="email-body">
+                {% if email.annotated_body %}
+                    {{ email.annotated_body | safe }}
+                {% elif email.body %}
+                    {{ email.body | safe }}
+                {% else %}
+                    <p style="color:#5f6368">No email body available.</p>
+                {% endif %}
+            </div>
+
+            <div class="email-actions">
+                <button class="action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
+                    </svg>
+                    Reply
+                </button>
+                <button class="action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21.99 8c0-.72-.37-1.35-.94-1.71L12 1 2.95 6.29C2.38 6.65 2 7.28 2 8v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2l-.01-10zM12 13L3.74 7.84 12 3l8.26 4.84L12 13z"/>
+                    </svg>
+                    Forward
+                </button>
+                {% if report and report.risk_level == 'HIGH' %}
+                <a href="/sandbox/{{ email.id }}" class="action-btn danger">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    Deep Scan
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="analysis-panel">
+
+        <div class="panel-card">
+            <div class="panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#1a73e8">
+                    <path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z"/>
+                </svg>
+                <h3>CPIE Risk Assessment</h3>
+            </div>
+            <div class="panel-body">
+                {% if report %}
+                <div class="risk-overview">
+                    <div class="big-badge {{ report.risk_level | lower if report.risk_level else 'low' }}">
+                        {{ report.risk_level if report.risk_level else 'LOW' }}
+                    </div>
+                    <div>
+                        <div class="score-label">Overall Risk</div>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <div class="score-row-label">
+                        <strong>Sender Trust Score (STS)</strong>
+                        <span>{{ report.sts_score if report.sts_score is not none else 0 }}/100</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill green"
+                             id="sts-bar"
+                             data-score="{{ report.sts_score if report.sts_score is not none else 0 }}"
+                             style="width:0%">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <div class="score-row-label">
+                        <strong>Manipulation Intensity (MII)</strong>
+                        <span>{{ report.mii_score if report.mii_score is not none else 0 }}/100</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill red"
+                             id="mii-bar"
+                             data-score="{{ report.mii_score if report.mii_score is not none else 0 }}"
+                             style="width:0%">
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <p style="font-size:13px; color:var(--text-secondary);">Analysis not yet available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#34a853">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <h3>Authentication Checks</h3>
+            </div>
+            <div class="panel-body">
+                {% if report and report.auth_checks %}
+                    <div class="auth-check">
+                        <span>SPF</span>
+                        <span class="{{ 'auth-pass' if report.auth_checks.spf == 'pass' else 'auth-fail' }}">
+                            {{ report.auth_checks.spf | upper if report.auth_checks.spf else 'UNKNOWN' }}
+                        </span>
+                    </div>
+                    <div class="auth-check">
+                        <span>DKIM</span>
+                        <span class="{{ 'auth-pass' if report.auth_checks.dkim == 'pass' else 'auth-fail' }}">
+                            {{ report.auth_checks.dkim | upper if report.auth_checks.dkim else 'UNKNOWN' }}
+                        </span>
+                    </div>
+                    <div class="auth-check">
+                        <span>DMARC</span>
+                        <span class="{{ 'auth-pass' if report.auth_checks.dmarc == 'pass' else 'auth-fail' }}">
+                            {{ report.auth_checks.dmarc | upper if report.auth_checks.dmarc else 'UNKNOWN' }}
+                        </span>
+                    </div>
+                    <div class="auth-check">
+                        <span>Display Name Match</span>
+                        <span class="{{ 'auth-pass' if not report.auth_checks.display_name_mismatch else 'auth-fail' }}">
+                            {{ 'MISMATCH' if report.auth_checks.display_name_mismatch else 'OK' }}
+                        </span>
+                    </div>
+                {% else %}
+                    <p class="no-findings">Authentication data not available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#d93025">
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                </svg>
+                <h3>Flagged Phrases</h3>
+            </div>
+            <div class="panel-body">
+                {% if report and report.flagged_phrases %}
+                    {% for phrase in report.flagged_phrases %}
+                    <div class="finding-item">
+                        <svg class="finding-icon" viewBox="0 0 24 24" fill="#d93025">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <div class="finding-text">
+                            <strong>"{{ phrase.text }}"</strong>
+                            <span>{{ phrase.reason }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-findings">No suspicious phrases detected.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#d93025">
+                    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                </svg>
+                <h3>Suspicious URLs</h3>
+            </div>
+            <div class="panel-body">
+                {% if report and report.suspicious_urls %}
+                    {% for url in report.suspicious_urls %}
+                    <div class="url-item">
+                        <a href="#" onclick="return false;">{{ url.url | truncate(50, True, '...') }}</a>
+                        <div class="url-reason">&#9888; {{ url.reason }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-findings">No suspicious URLs found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if report and report.risk_level == 'HIGH' %}
+        <div class="panel-card">
+            <div class="panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#b06000">
+                    <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+                </svg>
+                <h3>Deep Scan Available</h3>
+            </div>
+            <div class="panel-body">
+                <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+                    Open suspicious links safely inside a sandboxed virtual environment.
+                </p>
+                <a href="/sandbox/{{ email.id }}" class="sandbox-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                    </svg>
+                    Launch Sandbox Inspection
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if report and report.analysis_notes %}
+        <div class="panel-card">
+            <div class="panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#5f6368">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                </svg>
+                <h3>Analysis Notes</h3>
+            </div>
+            <div class="panel-body">
+                {% for note in report.analysis_notes %}
+                <div class="finding-item">
+                    <svg class="finding-icon" viewBox="0 0 24 24" fill="#5f6368">
+                        <path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z"/>
+                    </svg>
+                    <div class="finding-text">
+                        <span>{{ note }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<script src="/static/js/main.js"></script>
+
+</body>
+</html>

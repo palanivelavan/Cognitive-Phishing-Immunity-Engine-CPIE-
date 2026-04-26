@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPIE — Cognitive Phishing Immunity Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --google-blue: #1a73e8;
+            --google-blue-hover: #1557b0;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border: #dadce0;
+            --bg: #f8f9fa;
+            --white: #ffffff;
+            --red: #ea4335;
+            --green: #34a853;
+            --yellow: #fbbc04;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOP NAV */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo .shield-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .nav-logo span {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .nav-logo span em {
+            color: var(--google-blue);
+            font-style: normal;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-text {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .btn-text:hover { background: #f1f3f4; }
+
+        /* HERO */
+        .hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+        }
+
+        .hero-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 80px;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .hero-left h1 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-left h1 .highlight {
+            color: var(--google-blue);
+        }
+
+        .hero-left p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 32px;
+            max-width: 440px;
+        }
+
+        .feature-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 36px;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .pill .dot.blue { background: var(--google-blue); }
+        .pill .dot.green { background: var(--green); }
+        .pill .dot.red { background: var(--red); }
+        .pill .dot.yellow { background: var(--yellow); }
+
+        .btn-google {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .btn-google:hover {
+            background: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .btn-google svg { flex-shrink: 0; }
+
+        /* CARD */
+        .hero-right {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .demo-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: box-shadow 0.15s;
+            animation: slideUp 0.5s ease both;
+        }
+
+        .demo-card:nth-child(1) { animation-delay: 0.1s; }
+        .demo-card:nth-child(2) { animation-delay: 0.2s; }
+        .demo-card:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .demo-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        .demo-email { flex: 1; min-width: 0; }
+        .demo-email .sender { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+        .demo-email .subject { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .badge {
+            flex-shrink: 0;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        .badge.legit { background: #e6f4ea; color: #137333; }
+        .badge.medium { background: #fef7e0; color: #b06000; }
+        .badge.high { background: #fce8e6; color: #c5221f; }
+
+        .cpie-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            padding: 10px 0 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .cpie-label svg { color: var(--google-blue); }
+
+        /* HOW IT WORKS */
+        .how-section {
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: 60px 32px;
+        }
+
+        .how-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .how-inner h2 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .how-inner .sub {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            text-align: left;
+        }
+
+        .step {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--google-blue);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .step p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+            .hero-left h1 { font-size: 32px; }
+            .steps { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="/">
+        <svg class="shield-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 3L5 7.5V15C5 21.08 9.84 26.76 16 28C22.16 26.76 27 21.08 27 15V7.5L16 3Z" fill="#1a73e8" opacity="0.15"/>
+            <path d="M16 3L5 7.5V15C5 21.08 9.84 26.76 16 28C22.16 26.76 27 21.08 27 15V7.5L16 3Z" stroke="#1a73e8" stroke-width="1.5" fill="none"/>
+            <path d="M11 16l3.5 3.5L21 13" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>C<em>PIE</em></span>
+    </a>
+    <div class="nav-right">
+        <span style="font-size:13px; color: var(--text-secondary);">Cognitive Phishing Immunity Engine</span>
+    </div>
+</nav>
+
+<div class="hero">
+    <div class="hero-inner">
+        <div class="hero-left">
+            <h1>Smarter protection<br>for your <span class="highlight">inbox.</span></h1>
+            <p>CPIE analyzes incoming emails for social engineering, phishing patterns, and manipulation tactics — before you ever click. Powered by NLP, OCR, and sender trust scoring.</p>
+
+            <div class="feature-pills">
+                <div class="pill"><span class="dot blue"></span>Sender Trust Score</div>
+                <div class="pill"><span class="dot green"></span>NLP Analysis</div>
+                <div class="pill"><span class="dot red"></span>Phishing Detection</div>
+                <div class="pill"><span class="dot yellow"></span>OCR Image Scan</div>
+                <div class="pill"><span class="dot blue"></span>Sandbox Inspection</div>
+            </div>
+
+            <a href="/login" class="btn-google">
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                    <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                </svg>
+                Sign in with Google
+            </a>
+        </div>
+
+        <div class="hero-right">
+            <div style="font-size:11px; color:var(--text-secondary); font-weight:500; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;">Live Protection Preview</div>
+
+            <div class="demo-card">
+                <div class="demo-email">
+                    <div class="sender">Google &lt;no-reply@accounts.google.com&gt;</div>
+                    <div class="subject">Security alert for your account</div>
+                </div>
+                <span class="badge legit">✓ Legit</span>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-email">
+                    <div class="sender">PayPal Support &lt;support@paypa1-secure.net&gt;</div>
+                    <div class="subject">Your account will be suspended!</div>
+                </div>
+                <span class="badge high">MII: 87</span>
+            </div>
+
+            <div class="demo-card">
+                <div class="demo-email">
+                    <div class="sender">HR Team &lt;hr@company-updates.co&gt;</div>
+                    <div class="subject">Action required: Verify payroll details</div>
+                </div>
+                <span class="badge medium">MII: 54</span>
+            </div>
+
+            <div class="cpie-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z"/></svg>
+                CPIE is analyzing your inbox in real time
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="how-section">
+    <div class="how-inner">
+        <h2>How CPIE protects you</h2>
+        <p class="sub">A three-tier inspection pipeline designed around privacy and accuracy.</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Sender Trust Evaluation</h3>
+                <p>Checks SPF, DKIM, DMARC, domain age, and communication history to generate a Sender Trust Score — without reading your email body.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Deep Content Analysis</h3>
+                <p>Only for suspicious senders — NLP detects urgency and fear tactics, OCR scans embedded images, and the link analyzer checks every URL.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Cognitive Protection Layer</h3>
+                <p>Risky emails show an annotated view with highlighted threats and explanations. High-risk links open in a safe sandbox environment.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2026 CPIE Project &nbsp;·&nbsp; Cognitive Phishing Immunity Engine &nbsp;·&nbsp; Final Year Project
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+/* Highlight Styles */
+.cpie-highlight {
+    position: relative;
+    cursor: help;
+    border-bottom: 2px dotted transparent;
+    transition: background 0.2s;
+    padding: 0 2px;
+}
+
+.cpie-high   { background-color: #fce8e6; border-bottom-color: #d93025; }
+.cpie-medium { background-color: #fef7e0; border-bottom-color: #e37400; }
+.cpie-low    { background-color: #e6f4ea; border-bottom-color: #188038; }
+
+/* Tooltip - Hidden by default */
+.cpie-tooltip {
+    visibility: hidden;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    background: #202124;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none; /* Prevents tooltip from capturing mouse events */
+}
+
+/* Show Tooltip on Hover */
+.cpie-highlight:hover .cpie-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* URL Warning Badge */
+.cpie-url-flag {
+    color: #d93025;
+    background: #fce8e6;
+    border: 1px solid #f5c6c5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 500;
+}

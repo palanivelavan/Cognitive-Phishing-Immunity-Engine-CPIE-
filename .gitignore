@@ -1,0 +1,15 @@
+# Google OAuth Secrets - NEVER UPLOAD
+client_secrets.json
+
+# Python Virtual Environment
+venv/
+env/
+.venv/
+
+# Cache files
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+*.log
